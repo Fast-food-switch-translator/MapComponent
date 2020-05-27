@@ -18,11 +18,11 @@ class MyApp extends StatelessWidget {
           title: Text("Map component"),
         ),
         body: Map(),
-
       )
     );
   }
 }
+
 
 class Map extends StatefulWidget {
   @override
@@ -32,15 +32,21 @@ class Map extends StatefulWidget {
 class _MapState extends State<Map> {
 
   GoogleMapController mapController;// to get further info about the implemented map
-  static const _initialPos = LatLng(-37.7384855,144.7228);
+  static LatLng _initialPos;
   LatLng currLocation;
   LatLng _lastPos = _initialPos;
   final Set<Marker> _markers = {}; // to save markers of the map
 
-
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _currentLocation();
+  }
 
   @override
   Widget build(BuildContext context) {
+    return _initialPos ==  null? Container(child: CircularProgressIndicator(),): // to make sure that we get the location async
     Stack(
       children: <Widget>[
         GoogleMap(initialCameraPosition: CameraPosition(target: _initialPos,
@@ -85,6 +91,15 @@ class _MapState extends State<Map> {
         icon: BitmapDescriptor.defaultMarker
     )
     );
+  });
+  }
+
+  void _currentLocation() async {
+    Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+    List<Placemark> placemark = await Geolocator().placemarkFromCoordinates(position.latitude, position.longitude);
+//    print("Here is the position ${placemark[0]}");
+  setState(() {
+    _initialPos = LatLng(position.latitude,position.longitude);
   });
   }
 
